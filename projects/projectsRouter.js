@@ -22,6 +22,14 @@ router.get("/", async (req, res, next) => {
     }
 })
 
+router.get("/:id", validateProjectId(), async (req, res, next) => {
+    try {
+        res.json(req.project)
+    } catch(err) {
+        next(err)
+    }
+})
+
 function validateReqBody() {
     return (req, res, next) => {
         if (!req.body.name) {
@@ -30,6 +38,24 @@ function validateReqBody() {
             })
         } 
         next()
+    }
+}
+
+function validateProjectId() {
+    return async (req, res, next) => {
+        try {
+            const project = await projectsDb.getById(req.params.id)
+            if (project.length === 0) {
+                return res.status(404).json({
+                    message: "Could not find project"
+                })
+            } else {
+                req.project = project
+                next() 
+            }
+        } catch(err){
+            next(err)
+        }
     }
 }
 
